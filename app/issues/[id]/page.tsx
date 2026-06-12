@@ -35,6 +35,8 @@ export default function IssuePage() {
   const issueId = params.id as string;
 
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+
   const [issue, setIssue] = useState<Issue | null>(null);
   const [property, setProperty] = useState<Property | null>(null);
   const [activity, setActivity] = useState<Activity[]>([]);
@@ -97,39 +99,122 @@ export default function IssuePage() {
     );
   }
 
+  const tabs = [
+    "overview",
+    "workflow",
+    "quotes",
+    "invoices",
+    "photos",
+    "comments",
+    "activity",
+  ];
+
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: 40 }}>
+    <div style={{ maxWidth: 1000, margin: "0 auto", padding: 40 }}>
       <button onClick={() => router.push("/")}>← Back to dashboard</button>
 
-      <h1>{issue.title}</h1>
+      <div style={{ marginTop: 20, marginBottom: 24 }}>
+        <h1>{issue.title}</h1>
+        <p>{property?.address || "Unknown property"}</p>
+        <p>
+          <strong>Status:</strong> {formatLabel(issue.workflow_status)}
+        </p>
+      </div>
 
-      <p>{issue.description}</p>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          borderBottom: "1px solid #ddd",
+          marginBottom: 24,
+        }}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              padding: "10px 14px",
+              border: "none",
+              borderBottom:
+                activeTab === tab ? "3px solid black" : "3px solid transparent",
+              background: "transparent",
+              cursor: "pointer",
+              fontWeight: activeTab === tab ? "bold" : "normal",
+            }}
+          >
+            {formatLabel(tab)}
+          </button>
+        ))}
+      </div>
 
-      <hr />
+      {activeTab === "overview" && (
+        <div>
+          <h2>Overview</h2>
 
-      <p>
-        <strong>Property:</strong> {property?.address || "Unknown property"}
-      </p>
+          <p>
+            <strong>Property:</strong> {property?.address || "Unknown property"}
+          </p>
 
-      <p>
-        <strong>Category:</strong> {formatLabel(issue.category)}
-      </p>
+          <p>
+            <strong>Category:</strong> {formatLabel(issue.category)}
+          </p>
 
-      <p>
-        <strong>Workflow:</strong> {formatLabel(issue.workflow_status)}
-      </p>
+          <p>
+            <strong>Workflow:</strong> {formatLabel(issue.workflow_status)}
+          </p>
 
-      <p>
-        <strong>Status:</strong> {issue.status}
-      </p>
+          <p>
+            <strong>Open/Closed:</strong> {issue.status}
+          </p>
 
-      <p>
-        <strong>Contractor:</strong> {issue.contractor_name || "Unassigned"}
-      </p>
+          <p>
+            <strong>Contractor:</strong>{" "}
+            {issue.contractor_name || "Unassigned"}
+          </p>
 
-      <hr />
+          <h3>Description</h3>
+          <p>{issue.description}</p>
+        </div>
+      )}
 
-      <ActivityTimeline activity={activity} />
+      {activeTab === "workflow" && (
+        <div>
+          <h2>Workflow</h2>
+          <p>Current stage: {formatLabel(issue.workflow_status)}</p>
+          <p>Workflow controls will move here next.</p>
+        </div>
+      )}
+
+      {activeTab === "quotes" && (
+        <div>
+          <h2>Quotes</h2>
+          <p>Quote documents will show here.</p>
+        </div>
+      )}
+
+      {activeTab === "invoices" && (
+        <div>
+          <h2>Invoices</h2>
+          <p>Invoice documents will show here.</p>
+        </div>
+      )}
+
+      {activeTab === "photos" && (
+        <div>
+          <h2>Photos</h2>
+          <p>Issue photos will show here.</p>
+        </div>
+      )}
+
+      {activeTab === "comments" && (
+        <div>
+          <h2>Comments</h2>
+          <p>Comments will show here.</p>
+        </div>
+      )}
+
+      {activeTab === "activity" && <ActivityTimeline activity={activity} />}
     </div>
   );
 }
