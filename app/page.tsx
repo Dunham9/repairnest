@@ -7,10 +7,6 @@ import InviteUser from "@/components/InviteUser";
 import Sidebar from "@/components/Sidebar";
 import IssueCard from "@/components/IssueCard";
 import DashboardOverview from "@/components/DashboardOverview";
-import QuotesDashboard from "@/components/QuotesDashboard";
-import InvoicesDashboard from "@/components/InvoicesDashboard";
-import AnalyticsDashboard from "@/components/AnalyticsDashboard";
-
 
 type Property = {
   id: string;
@@ -60,13 +56,12 @@ type IssuePhoto = {
 export default function HomePage() {
   const router = useRouter();
 
-  const [dashboardTab, setDashboardTab] = useState("overview");
-
   const [currentView, setCurrentView] = useState("dashboard");
   const [loading, setLoading] = useState(true);
 
   const [userId, setUserId] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState("");
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [contractors, setContractors] = useState<Contractor[]>([]);
@@ -118,6 +113,15 @@ export default function HomePage() {
       }
 
       setOrgId(org);
+
+      const { data: orgData } = await supabase
+        .from("organizations")
+        .select("name")
+        .eq("id", org)
+        .single();
+
+      setCompanyName(orgData?.name || "");
+
       await refreshAll(org);
       setLoading(false);
     }
@@ -382,35 +386,7 @@ export default function HomePage() {
 
       <main style={{ flex: 1, padding: 24 }}>
        <h1>Dashboard</h1>
-       <div
-  style={{
-    display: "flex",
-    gap: 10,
-    borderBottom: "1px solid #ddd",
-    marginBottom: 30,
-  }}
->
-  {["overview", "quotes", "invoices"].map((tab) => (
-    <button
-      key={tab}
-      onClick={() => setDashboardTab(tab)}
-      style={{
-        border: "none",
-        background: "transparent",
-        padding: 12,
-        borderBottom:
-          dashboardTab === tab
-            ? "3px solid black"
-            : "3px solid transparent",
-        cursor: "pointer",
-        fontWeight: dashboardTab === tab ? "bold" : "normal",
-      }}
-    >
-      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-    </button>
-  ))}
-</div>
-
+       
         <button onClick={logout}>Logout</button>
 
         <p>
@@ -421,22 +397,8 @@ export default function HomePage() {
 
        {currentView === "dashboard" && (
  <>
-  {dashboardTab === "overview" && (
-    <DashboardOverview
-      issues={issues}
-      properties={properties}
-    />
-  )}
-
-  {dashboardTab === "quotes" && (
-    <QuotesDashboard
-      issues={issues}
-      properties={properties}
-  />
-)}
-
-    {dashboardTab === "invoices" && (
-  <InvoicesDashboard
+ {currentView === "dashboard" && (
+  <DashboardOverview
     issues={issues}
     properties={properties}
   />

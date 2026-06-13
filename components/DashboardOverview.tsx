@@ -24,26 +24,15 @@ export default function DashboardOverview({
   issues: Issue[];
   properties: Property[];
 }) {
-  const reportedCount = issues.filter(
-    (i) => i.workflow_status === "reported"
-  ).length;
-
+  const reportedCount = issues.filter((i) => i.workflow_status === "reported").length;
   const openCount = issues.filter((i) => i.status === "open").length;
-
   const attentionCount = issues.filter((i) => i.requires_attention).length;
 
-  const gasSafetyCount = issues.filter(
-    (i) => i.category === "gas_safety"
-  ).length;
-
+  const gasSafetyCount = issues.filter((i) => i.category === "gas_safety").length;
   const eicrCount = issues.filter((i) => i.category === "eicr").length;
-
   const epcCount = issues.filter((i) => i.category === "epc").length;
 
-  const quotedIssues = issues.filter(
-    (i) => i.workflow_status === "quote_submitted"
-  );
-
+  const quotedIssues = issues.filter((i) => i.workflow_status === "quote_submitted");
   const invoiceIssues = issues.filter((i) => i.invoice_submitted);
 
   const workflowStages = [
@@ -56,6 +45,12 @@ export default function DashboardOverview({
     "closed",
   ];
 
+  const workflowData = workflowStages.map((stage) => ({
+    stage,
+    label: formatLabel(stage),
+    count: issues.filter((issue) => issue.workflow_status === stage).length,
+  }));
+
   function getPropertyAddress(propertyId: string | null) {
     const property = properties.find((p) => p.id === propertyId);
     return property?.address || "Unknown property";
@@ -67,10 +62,7 @@ export default function DashboardOverview({
 
       <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
         <DashboardBubble label="Reported" value={reportedCount} />
-        <DashboardBubble
-          label="Issues Requiring Attention"
-          value={attentionCount}
-        />
+        <DashboardBubble label="Issues Requiring Attention" value={attentionCount} />
         <DashboardBubble label="Open Jobs" value={openCount} />
       </div>
 
@@ -107,26 +99,7 @@ export default function DashboardOverview({
 
       <h2>Workflow Overview</h2>
 
-      <div style={{ display: "grid", gap: 10, marginBottom: 30 }}>
-        {workflowStages.map((stage) => (
-          <div
-            key={stage}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 12,
-              padding: 14,
-              background: "white",
-            }}
-          >
-            <strong>{formatLabel(stage)}</strong>
-
-            <div>
-              {issues.filter((issue) => issue.workflow_status === stage).length}{" "}
-              jobs
-            </div>
-          </div>
-        ))}
-      </div>
+      <WorkflowPie data={workflowData} />
     </>
   );
 }
@@ -174,6 +147,89 @@ function FinanceGrid({
       ))}
     </div>
   );
+}
+
+function WorkflowPie({
+  data,
+}: {
+  data: { stage: string; label: string; count: number }[];
+}) {
+  const total = data.reduce((sum, item) => sum + item.count, 0);
+
+  return (
+    <div
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: 12,
+        padding: 20,
+        background: "white",
+        marginBottom: 30,
+      }}
+    >
+      {total === 0 ? (
+        <p>No workflow data yet.</p>
+      ) : (
+        <div style={{ display: "flex", gap: 30, alignItems: "center" }}>
+          <div
+            style={{
+              width: 180,
+              height: 180,
+              borderRadius: "50%",
+              background: buildConicGradient(data),
+              border: "1px solid #eee",
+            }}
+          />
+
+          <div style={{ flex: 1 }}>
+            {data.map((item) => (
+              <div
+                key={item.stage}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  borderBottom: "1px solid #eee",
+                  padding: "8px 0",
+                }}
+              >
+                <span>{item.label}</span>
+                <strong>{item.count}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function buildConicGradient(data: { stage: string; count: number }[]) {
+  const colors = [
+    "#2563eb",
+    "#7c3aed",
+    "#db2777",
+    "#ea580c",
+    "#ca8a04",
+    "#16a34a",
+    "#475569",
+  ];
+
+  const total = data.reduce((sum, item) => sum + item.count, 0);
+
+  if (total === 0) {
+    return "#eee";
+  }
+
+  let current = 0;
+
+  const parts = data.map((item, index) => {
+    const start = current;
+    const end = current + (item.count / total) * 100;
+    current = end;
+
+    return `${colors[index]} ${start}% ${end}%`;
+  });
+
+  return `conic-gradient(${parts.join(", ")})`;
 }
 
 function DashboardBubble({ label, value }: { label: string; value: number }) {
