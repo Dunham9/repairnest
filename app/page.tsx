@@ -6,6 +6,11 @@ import { supabase } from "@/lib/supabase";
 import InviteUser from "@/components/InviteUser";
 import Sidebar from "@/components/Sidebar";
 import IssueCard from "@/components/IssueCard";
+import DashboardOverview from "@/components/DashboardOverview";
+import QuotesDashboard from "@/components/QuotesDashboard";
+import InvoicesDashboard from "@/components/InvoicesDashboard";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
+
 
 type Property = {
   id: string;
@@ -54,6 +59,8 @@ type IssuePhoto = {
 
 export default function HomePage() {
   const router = useRouter();
+
+  const [dashboardTab, setDashboardTab] = useState("overview");
 
   const [currentView, setCurrentView] = useState("dashboard");
   const [loading, setLoading] = useState(true);
@@ -374,7 +381,35 @@ export default function HomePage() {
       <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
 
       <main style={{ flex: 1, padding: 24 }}>
-        <h1>Maintenance Dashboard</h1>
+       <h1>Dashboard</h1>
+       <div
+  style={{
+    display: "flex",
+    gap: 10,
+    borderBottom: "1px solid #ddd",
+    marginBottom: 30,
+  }}
+>
+  {["overview", "quotes", "invoices"].map((tab) => (
+    <button
+      key={tab}
+      onClick={() => setDashboardTab(tab)}
+      style={{
+        border: "none",
+        background: "transparent",
+        padding: 12,
+        borderBottom:
+          dashboardTab === tab
+            ? "3px solid black"
+            : "3px solid transparent",
+        cursor: "pointer",
+        fontWeight: dashboardTab === tab ? "bold" : "normal",
+      }}
+    >
+      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+    </button>
+  ))}
+</div>
 
         <button onClick={logout}>Logout</button>
 
@@ -384,48 +419,31 @@ export default function HomePage() {
 
         {orgId && <InviteUser orgId={orgId} />}
 
-        {currentView === "dashboard" && (
-          <>
-            <h2>Operations</h2>
-            <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-              <DashboardBubble label="Reported" value={reportedCount} />
-              <DashboardBubble label="Needs Attention" value={attentionCount} />
-              <DashboardBubble label="Open Issues" value={openCount} />
-            </div>
+       {currentView === "dashboard" && (
+ <>
+  {dashboardTab === "overview" && (
+    <DashboardOverview
+      issues={issues}
+      properties={properties}
+    />
+  )}
 
-            <h2>Compliance</h2>
-            <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-              <DashboardBubble label="Gas Safety" value={gasSafetyCount} />
-              <DashboardBubble label="EICR" value={eicrCount} />
-              <DashboardBubble label="EPC" value={epcCount} />
-            </div>
+  {dashboardTab === "quotes" && (
+    <QuotesDashboard
+      issues={issues}
+      properties={properties}
+  />
+)}
 
-            <h2>Finance</h2>
-            <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
-              <DashboardBubble label="Quotes Submitted" value={quotesSubmittedCount} />
-              <DashboardBubble label="Invoices Submitted" value={invoicesSubmittedCount} />
-            </div>
+    {dashboardTab === "invoices" && (
+  <InvoicesDashboard
+    issues={issues}
+    properties={properties}
+  />
+)}
 
-            <h2>Property Issues</h2>
-            <IssueList
-              properties={properties}
-              issues={issues}
-              comments={comments}
-              photos={photos}
-              contractors={contractors}
-              commentInputs={commentInputs}
-              setCommentInputs={setCommentInputs}
-              assignContractor={assignContractor}
-              updateIssueWorkflow={updateIssueWorkflow}
-              toggleAttention={toggleAttention}
-              deleteIssue={deleteIssue}
-              addComment={addComment}
-              refreshAll={async () => {
-                if (orgId) await refreshAll(orgId);
-              }}
-            />
-          </>
-        )}
+  </>
+)}
 
         {currentView === "properties" && (
           <>
@@ -587,13 +605,6 @@ export default function HomePage() {
             />
 
             <button onClick={createIssue}>Create Issue</button>
-          </>
-        )}
-
-        {currentView === "analytics" && (
-          <>
-            <h2>Analytics</h2>
-            <p>Workflow pie chart coming next.</p>
           </>
         )}
 

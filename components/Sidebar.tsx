@@ -7,14 +7,13 @@ export default function Sidebar({
   currentView: string;
   setCurrentView: (view: string) => void;
 }) {
-  const items = [
-    "dashboard",
-    "properties",
-    "contractors",
-    "create issue",
-    "analytics",
-    "settings",
-  ];
+const items = [
+  "dashboard",
+  "properties",
+  "contractors",
+  "create issue",
+  "settings",
+];
 
   return (
     <div
