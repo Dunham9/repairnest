@@ -505,27 +505,31 @@ textDecoration: "none",
             <button onClick={createContractor}>Add Contractor</button>
 
             <div style={{ marginTop: 20 }}>
-              {contractors.map((contractor) => (
-                <div
-                  key={contractor.id}
-                  style={{
-                    border: "1px solid #ddd",
-                    padding: 12,
-                    marginBottom: 10,
-                  }}
-                >
-                  <strong>{contractor.name}</strong>
-                  <p>
-                    {contractor.trade || "No trade"} |{" "}
-                    {contractor.phone || "No phone"} |{" "}
-                    {contractor.email || "No email"}
-                  </p>
+            {contractors.map((contractor) => (
+  <a
+    key={contractor.id}
+    href={`/contractors/${contractor.id}`}
+    style={{
+      display: "block",
+      border: "1px solid #ddd",
+      padding: 12,
+      marginBottom: 10,
+      color: "inherit",
+      textDecoration: "none",
+    }}
+  >
+    <strong>{contractor.name}</strong>
+    <p>
+      {contractor.trade || "No trade"} |{" "}
+      {contractor.phone || "No phone"} |{" "}
+      {contractor.email || "No email"}
+    </p>
+  </a>
+))}
                 </div>
-              ))}
-            </div>
-          </>
+                          </>
         )}
-
+        
         {currentView === "create issue" && (
           <>
             <h2>Create Issue</h2>

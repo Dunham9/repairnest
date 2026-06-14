@@ -1,11 +1,15 @@
 "use client";
 
+"use client";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Issue = {
   id: string;
   status: string;
   contractor_name: string | null;
+  contractor_id: string | null;
 };
 
 export default function ContractorWorkloadChart({
@@ -14,6 +18,7 @@ export default function ContractorWorkloadChart({
   issues: Issue[];
 }) {
   const [hoveredName, setHoveredName] = useState<string | null>(null);
+  const router = useRouter();
 
   const openIssues = issues.filter((issue) => issue.status === "open");
 
@@ -23,12 +28,19 @@ export default function ContractorWorkloadChart({
     return acc;
   }, {});
 
-  const data = Object.entries(workload)
-    .map(([name, count]) => ({
+const data = Object.entries(workload)
+  .map(([name, count]) => {
+    const issue = openIssues.find(
+      (i) => i.contractor_name === name
+    );
+
+    return {
+      id: issue?.contractor_id,
       name,
       count,
       initials: getInitials(name),
-    }))
+    };
+  })
     .sort((a, b) => b.count - a.count);
 
   const max = Math.max(...data.map((item) => item.count), 1);
@@ -83,10 +95,15 @@ export default function ContractorWorkloadChart({
             const isHovered = hoveredName === item.name;
 
             return (
-              <div
-                key={item.name}
-                onMouseEnter={() => setHoveredName(item.name)}
-                onMouseLeave={() => setHoveredName(null)}
+             <div
+  key={item.name}
+  onMouseEnter={() => setHoveredName(item.name)}
+  onMouseLeave={() => setHoveredName(null)}
+  onClick={() => {
+    if (item.id) {
+      router.push(`/contractors/${item.id}`);
+    }
+  }}
                 style={{
                   flex: 1,
                   display: "flex",

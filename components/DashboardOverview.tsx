@@ -12,6 +12,7 @@ type Issue = {
   contractor_name: string | null;
   requires_attention: boolean;
   invoice_submitted: boolean;
+  contractor_id: string | null;
 };
 
 type Property = {
@@ -35,7 +36,9 @@ export default function DashboardOverview({
   const epcCount = issues.filter((i) => i.category === "epc").length;
 
   const quotedIssues = issues.filter((i) => i.workflow_status === "quote_submitted");
-  const invoiceIssues = issues.filter((i) => i.invoice_submitted);
+  const invoiceIssues = issues.filter(
+  (i) => i.workflow_status === "invoice_submitted"
+);
   
 
 const workflowStages = [
