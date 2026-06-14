@@ -7,6 +7,7 @@ import InviteUser from "@/components/InviteUser";
 import Sidebar from "@/components/Sidebar";
 import IssueCard from "@/components/IssueCard";
 import DashboardOverview from "@/components/DashboardOverview";
+import Image from "next/image";
 
 type Property = {
   id: string;
@@ -105,7 +106,25 @@ export default function HomePage() {
         .eq("user_id", user.id)
         .limit(1);
 
-      const org = membership?.[0]?.organization_id;
+    const org = membership?.[0]?.organization_id;
+
+if (!org) {
+  setLoading(false);
+  return;
+}
+
+setOrgId(org);
+
+const { data: orgData } = await supabase
+  .from("organizations")
+  .select("name")
+  .eq("id", org)
+  .single();
+
+setCompanyName(orgData?.name || "");
+
+await refreshAll(org);
+setLoading(false);
 
       if (!org) {
         setLoading(false);
@@ -113,15 +132,6 @@ export default function HomePage() {
       }
 
       setOrgId(org);
-
-      const { data: orgData } = await supabase
-        .from("organizations")
-        .select("name")
-        .eq("id", org)
-        .single();
-
-      setCompanyName(orgData?.name || "");
-
       await refreshAll(org);
       setLoading(false);
     }
@@ -387,13 +397,33 @@ export default function HomePage() {
       <main style={{ flex: 1, padding: 24 }}>
        <h1>Dashboard</h1>
        
-        <button onClick={logout}>Logout</button>
+       <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+    marginBottom: 30,
+  }}
+>
+  <Image
+    src="/public/logo.png"
+    alt="Logo"
+    width={60}
+    height={60}
+  />
 
-        <p>
-          <strong>ORG ID:</strong> {orgId || "none"}
-        </p>
+  <div style={{ flex: 1 }}>
+    <h2 style={{ margin: 0 }}>
+      {companyName || "RepairNest"}
+    </h2>
 
-        {orgId && <InviteUser orgId={orgId} />}
+    {orgId && <InviteUser orgId={orgId} />}
+  </div>
+
+  <button onClick={logout}>
+    Logout
+  </button>
+</div>
 
        {currentView === "dashboard" && (
  <>
@@ -422,16 +452,19 @@ export default function HomePage() {
 
             <div style={{ marginTop: 20 }}>
               {properties.map((property) => (
-                <div
-                  key={property.id}
-                  style={{
+  <a
+    key={property.id}
+    href={`/properties/${property.id}`}
+                  style={{display: "block",
+color: "inherit",
+textDecoration: "none",
                     border: "1px solid #ddd",
                     padding: 12,
                     marginBottom: 10,
                   }}
                 >
                   {property.address}
-                </div>
+               </a>
               ))}
             </div>
           </>

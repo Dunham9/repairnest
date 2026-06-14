@@ -1,5 +1,7 @@
 "use client";
 
+import ContractorWorkloadChart from "@/components/ContractorWorkloadChart";
+
 type Issue = {
   id: string;
   title: string;
@@ -34,22 +36,42 @@ export default function DashboardOverview({
 
   const quotedIssues = issues.filter((i) => i.workflow_status === "quote_submitted");
   const invoiceIssues = issues.filter((i) => i.invoice_submitted);
+  
 
-  const workflowStages = [
-    "reported",
-    "quote_requested",
-    "quote_submitted",
-    "job_awarded",
-    "job_complete",
-    "invoice_submitted",
-    "closed",
-  ];
+const workflowStages = [
+  {
+    key: "reported",
+    label: "Reported",
+  },
+  {
+    key: "quote_requested",
+    label: "Quotes Requested",
+  },
+  {
+    key: "quote_submitted",
+    label: "Quotes Submitted",
+  },
+  {
+    key: "job_awarded",
+    label: "Job Awarded, Awaiting Appointment Date",
+  },
+  {
+    key: "job_complete",
+    label: "Job Complete, Awaiting Invoice",
+  },
+  {
+    key: "invoice_submitted",
+    label: "Invoices Submitted, Job Ready For Closure",
+  },
+];
 
-  const workflowData = workflowStages.map((stage) => ({
-    stage,
-    label: formatLabel(stage),
-    count: issues.filter((issue) => issue.workflow_status === stage).length,
-  }));
+const workflowData = workflowStages.map((stage) => ({
+  stage: stage.key,
+  label: stage.label,
+  count: issues.filter(
+    (issue) => issue.workflow_status === stage.key
+  ).length,
+}));
 
   function getPropertyAddress(propertyId: string | null) {
     const property = properties.find((p) => p.id === propertyId);
@@ -100,6 +122,9 @@ export default function DashboardOverview({
       <h2>Workflow Overview</h2>
 
       <WorkflowPie data={workflowData} />
+
+      <ContractorWorkloadChart issues={issues} />
+      
     </>
   );
 }
@@ -191,7 +216,31 @@ function WorkflowPie({
                   padding: "8px 0",
                 }}
               >
-                <span>{item.label}</span>
+          <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  }}
+>
+  <div
+    style={{
+      width: 12,
+      height: 12,
+      borderRadius: "50%",
+      background: [
+        "#2563eb",
+        "#7c3aed",
+        "#db2777",
+        "#ea580c",
+        "#ca8a04",
+        "#16a34a",
+      ][data.indexOf(item)],
+    }}
+  />
+
+  <span>{item.label}</span>
+</div>
                 <strong>{item.count}</strong>
               </div>
             ))}
